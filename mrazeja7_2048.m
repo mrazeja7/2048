@@ -78,7 +78,7 @@ function draw_board(data)
     clf;
     
     square_size = 1.5;
-    center_size = 0.05;
+    grid_size = 0.05;
     matrix = data{1};
     matrix = rot90(matrix, -1);
     colors = data{3};
@@ -89,12 +89,15 @@ function draw_board(data)
     axis equal;
     hold on;
     
+    game_position = [0.75 0.75 4.5 5.5].*square_size;
+    board_position = [1 1 4 4].*square_size;
+    
     % background for the whole app
-    rectangle('Position', [0.75 0.75 4.5 5.5].*square_size, ...
+    rectangle('Position', game_position, ...
                 'Curvature',0, 'FaceColor', base_color, 'EdgeColor', 'none');
     
     %background for the board
-    rectangle('Position', [1 1 4 4].*square_size, ...
+    rectangle('Position', board_position, ...
                 'Curvature',0.03, 'FaceColor', bg_color, 'EdgeColor', 'none');
     
     for i = 1:1:4
@@ -111,7 +114,7 @@ function draw_board(data)
             
             if (color_id <= 2); font_color = colors(16,:); else font_color = colors(17,:); end;
             rectangle('Position', ...
-                [i+center_size j+center_size 1-2*center_size 1-2*center_size].*square_size, ...
+                [i+grid_size j+grid_size 1-2*grid_size 1-2*grid_size].*square_size, ...
                 'Curvature',0.08, 'FaceColor', square_color, 'EdgeColor', 'none');
             text((i+0.5)*square_size,(j+0.5)*square_size,number, ...
                 'FontSize', fontsize, 'FontName', 'Helvetica', ...
@@ -126,7 +129,7 @@ function draw_board(data)
     
     scorebox_size = [1.25 0.85].*square_size;
     scorebox_pos = [3.75 5.15].*square_size;
-    scoretext_pos = (scorebox_pos + scorebox_size./2);    
+    scoretext_pos = (scorebox_pos + scorebox_size./2);
     
     rectangle('Position',(cat(2, scorebox_pos, scorebox_size)), ...
         'Curvature',0.1, 'FaceColor', bg_color, 'EdgeColor', 'none');
@@ -135,6 +138,9 @@ function draw_board(data)
          'FontWeight', 'bold', 'FontSize', fontsize/2, 'HorizontalAlignment', 'center', ...
           'verticalAlignment', 'middle', 'Color', colors(17,:));
     axis off;
+end
+
+function draw_game_over(game_position, won)
 end
 
 function [newmatrix, newscore] = move_left(matrix, score)
