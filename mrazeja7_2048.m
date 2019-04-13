@@ -137,10 +137,50 @@ function draw_board(data)
     text(scoretext_pos(1), scoretext_pos(2), scoretxt, 'FontName', 'Helvetica', ...
          'FontWeight', 'bold', 'FontSize', fontsize/2, 'HorizontalAlignment', 'center', ...
           'verticalAlignment', 'middle', 'Color', colors(17,:));
+      
+    check_game_over(data);
+      
     axis off;
 end
 
+function over = check_game_over(data)
+    matrix = data{1};
+    over = 1;
+    % check if there are any free spaces left (if yes - game isn't over)
+    if (sum(isnan(matrix(:))) == 0)
+        %draw_game_over([1 1 1 1], 0);
+        % check for possible moves - are any two blocks the same value?
+        for i = 1:1:4
+            for j = 1:1:4
+                % easiest way to avoid bad indexes
+                try above = matrix(i-1,j); catch above = NaN; end;
+                try below = matrix(i+1,j); catch below = NaN; end;
+                try left = matrix(i,j-1);  catch left = NaN;  end;
+                try right = matrix(i,j+1); catch right = NaN; end;                    
+                
+                if ((matrix(i,j) == above) | ...
+                    (matrix(i,j) == below) | ...
+                    (matrix(i,j) == left) | ...
+                    (matrix(i,j) == right))
+                    over = 0;
+                    disp('There are still possible moves');
+                    return;
+                end                
+            end
+        end
+    else
+        over = 0;
+    end
+end
+
 function draw_game_over(game_position, won)
+    if (won ~= 0)
+        color = 'black';
+    else
+        color = 'yellow';
+    end
+    
+    rectangle('Position', game_position, 'FaceColor', color);
 end
 
 function [newmatrix, newscore] = move_left(matrix, score)
