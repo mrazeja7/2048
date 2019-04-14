@@ -31,15 +31,11 @@ draw_board(game_data);
 % from this point on.
 
 function rgb = hex2rgb(hexString)
-	if size(hexString,2) ~= 6
-        disp(hexString)
-		error('invalid input: not 6 characters');        
-	else
-		r = double(hex2dec(hexString(1:2)));
-		g = double(hex2dec(hexString(3:4)));
-		b = double(hex2dec(hexString(5:6)));
-		rgb = [r, g, b];
-	end
+
+    r = double(hex2dec(hexString(1:2)));
+    g = double(hex2dec(hexString(3:4)));
+    b = double(hex2dec(hexString(5:6)));
+    rgb = [r, g, b];
 end
 
 function handleGame(~,E)
@@ -140,6 +136,7 @@ function draw_board(data)
       
     check_game_over(data);
     check_game_won(data);
+    %draw_game_over(game_position, 0);
       
     axis off;
 end
@@ -187,6 +184,9 @@ function over = check_game_over(data)
 end
 
 function draw_game_over(game_position, won)
+    
+    text_position = [game_position(1) + game_position(3)/2 ...
+                     game_position(2) + game_position(4)/2];
     if (won ~= 0)
         color = 'black';
     else
@@ -194,6 +194,9 @@ function draw_game_over(game_position, won)
     end
     
     rectangle('Position', game_position, 'FaceColor', color);
+    text(text_position(1), text_position(2), 'Game Over!', 'FontName', 'Helvetica', ...
+         'FontWeight', 'bold', 'FontSize', 20, 'HorizontalAlignment', 'center', ...
+          'verticalAlignment', 'middle', 'Color', 'red');
 end
 
 function [newmatrix, newscore] = move_left(matrix, score)
