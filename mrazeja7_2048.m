@@ -139,8 +139,18 @@ function draw_board(data)
           'verticalAlignment', 'middle', 'Color', colors(17,:));
       
     check_game_over(data);
+    check_game_won(data);
       
     axis off;
+end
+
+function won = check_game_won(data)
+    matrix = data{1};
+    won = 0;
+    if (max(matrix(:)) == 2048)
+        disp('you win!');
+        won = 1;
+    end
 end
 
 function over = check_game_over(data)
@@ -160,8 +170,9 @@ function over = check_game_over(data)
                 
                 if ((matrix(i,j) == above) | ...
                     (matrix(i,j) == below) | ...
-                    (matrix(i,j) == left) | ...
+                    (matrix(i,j) == left)  | ...
                     (matrix(i,j) == right))
+                    % some moves still possible
                     over = 0;
                     disp('There are still possible moves');
                     return;
@@ -170,7 +181,9 @@ function over = check_game_over(data)
         end
     else
         over = 0;
+        return;
     end
+    disp('Game over!');
 end
 
 function draw_game_over(game_position, won)
