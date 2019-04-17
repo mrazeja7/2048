@@ -31,15 +31,11 @@ draw_board(game_data);
 % from this point on.
 
 function rgb = hex2rgb(hexString)
-	if size(hexString,2) ~= 6
-        disp(hexString)
-		error('invalid input: not 6 characters');        
-	else
-		r = double(hex2dec(hexString(1:2)));
-		g = double(hex2dec(hexString(3:4)));
-		b = double(hex2dec(hexString(5:6)));
-		rgb = [r, g, b];
-	end
+
+    r = double(hex2dec(hexString(1:2)));
+    g = double(hex2dec(hexString(3:4)));
+    b = double(hex2dec(hexString(5:6)));
+    rgb = [r, g, b];
 end
 
 function handleGame(~,E)
@@ -139,8 +135,19 @@ function draw_board(data)
           'verticalAlignment', 'middle', 'Color', colors(17,:));
       
     check_game_over(data);
+    check_game_won(data);
+    draw_game_over(game_position, 0);
       
     axis off;
+end
+
+function won = check_game_won(data)
+    matrix = data{1};
+    won = 0;
+    if (max(matrix(:)) == 2048)
+        disp('you win!');
+        won = 1;
+    end
 end
 
 function over = check_game_over(data)
@@ -149,36 +156,48 @@ function over = check_game_over(data)
     % check if there are any free spaces left (if yes - game isn't over)
     if (sum(isnan(matrix(:))) == 0)
         %draw_game_over([1 1 1 1], 0);
-        % check for possible moves - are any two adjacent places the same
-        % value?
+        % check for possible moves - are any two blocks the same value?
         for i = 1:1:4
             for j = 1:1:4
+                % easiest way to avoid bad indexes
                 try above = matrix(i-1,j); catch above = NaN; end;
                 try below = matrix(i+1,j); catch below = NaN; end;
-                try left = matrix(i,j-1); catch left = NaN; end;
+                try left = matrix(i,j-1);  catch left = NaN;  end;
                 try right = matrix(i,j+1); catch right = NaN; end;                    
                 
                 if ((matrix(i,j) == above) | ...
                     (matrix(i,j) == below) | ...
-                    (matrix(i,j) == left) | ...
+                    (matrix(i,j) == left)  | ...
                     (matrix(i,j) == right))
+                    % some moves still possible
                     over = 0;
+                    disp('There are still possible moves');
+                    return;
                 end                
             end
         end
     else
         over = 0;
+        return;
     end
+    disp('Game over!');
 end
 
 function draw_game_over(game_position, won)
+    
+    text_position = [game_position(1) + game_position(3)/2 ...
+                     game_position(2) + game_position(4)/2];
     if (won ~= 0)
-        color = 'black';
+        color = [0 0 0 0.5]; % black
     else
-        color = 'yellow';
+        color = [1 1 0 0.5]; % yellow
     end
     
-    rectangle('Position', game_position, 'FaceColor', color);
+    r = rectangle('Position', game_position, 'FaceColor', color, ...
+                  'EdgeColor', color);
+    text(text_position(1), text_position(2), 'Game Over!', 'FontName', 'Helvetica', ...
+         'FontWeight', 'bold', 'FontSize', 20, 'HorizontalAlignment', 'center', ...
+          'verticalAlignment', 'middle', 'Color', 'red');
 end
 
 function [newmatrix, newscore] = move_left(matrix, score)

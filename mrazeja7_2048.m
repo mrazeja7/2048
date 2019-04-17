@@ -123,22 +123,41 @@ function draw_board(data)
     score = data{2};
     scoretxt = {'SCORE', int2str(score)};
     
-    scorebox_size = [1.25 0.85].*square_size;
     scorebox_pos = [3.75 5.15].*square_size;
-    scoretext_pos = (scorebox_pos + scorebox_size./2);
+    resetbox_pos = [1 5.15].*square_size;
+    box_size = [1.25 0.85].*square_size;
+    scoretext_pos = (scorebox_pos + box_size./2);
+    resettext_pos = (resetbox_pos + box_size./2);
     
-    rectangle('Position',(cat(2, scorebox_pos, scorebox_size)), ...
+    rectangle('Position',(cat(2, scorebox_pos, box_size)), ...
         'Curvature',0.1, 'FaceColor', bg_color, 'EdgeColor', 'none');
     
     text(scoretext_pos(1), scoretext_pos(2), scoretxt, 'FontName', 'Helvetica', ...
          'FontWeight', 'bold', 'FontSize', fontsize/2, 'HorizontalAlignment', 'center', ...
           'verticalAlignment', 'middle', 'Color', colors(17,:));
       
+    rectangle('Position',(cat(2, resetbox_pos, box_size)), ...
+        'Curvature',0.1, 'FaceColor', bg_color, 'EdgeColor', 'none');
+    % 'ButtonDownFcn', {@reset_game, data}
+    
+    text(resettext_pos(1), resettext_pos(2), 'RESET', 'FontName', 'Helvetica', ...
+         'FontWeight', 'bold', 'FontSize', fontsize/2, 'HorizontalAlignment', 'center', ...
+          'verticalAlignment', 'middle', 'Color', colors(17,:));
+      
     check_game_over(data);
     check_game_won(data);
+    
     %draw_game_over(game_position, 0);
       
     axis off;
+end
+
+function data = reset_game(data)
+    data{2} = 0;
+    matrix = ones(4)*NaN;
+    matrix = spawn_number(matrix);
+    matrix = spawn_number(matrix);
+    data{1} = matrix;
 end
 
 function won = check_game_won(data)
@@ -188,12 +207,13 @@ function draw_game_over(game_position, won)
     text_position = [game_position(1) + game_position(3)/2 ...
                      game_position(2) + game_position(4)/2];
     if (won ~= 0)
-        color = 'black';
+        color = [0 0 0 0.5]; % black
     else
-        color = 'yellow';
+        color = [1 1 0 0.5]; % yellow
     end
     
-    rectangle('Position', game_position, 'FaceColor', color);
+    r = rectangle('Position', game_position, 'FaceColor', color, ...
+                  'EdgeColor', color);
     text(text_position(1), text_position(2), 'Game Over!', 'FontName', 'Helvetica', ...
          'FontWeight', 'bold', 'FontSize', 20, 'HorizontalAlignment', 'center', ...
           'verticalAlignment', 'middle', 'Color', 'red');
