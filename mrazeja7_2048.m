@@ -1,10 +1,4 @@
-% create map, initialize colors and draw the screen for the first time.
-
-map = ones(4)*NaN;
-map = spawn_number(map);
-map = spawn_number(map);
-score = 0;
-
+% initialize colors, create playing board and draw the screen for the first time.
 % https://tex.stackexchange.com/questions/174806/how-can-i-create-a-template-for-2048-game-situations
 hexcolors = ["CCC0B3","EEE4DA","EDE0C8","F2B179", ...
              "F59563","F67C5F","F65E3B","EDCF72", ...
@@ -17,7 +11,8 @@ for i = hexcolors
 end
 colors = colors ./255;
 
-game_data = {map, score, colors};
+game_data = {0, 0, colors};
+game_data = reset_game(game_data);
 
 screenPos = [500 250 768 768];
 
@@ -43,6 +38,7 @@ function handleGame(~,E)
     matrix = data{1};
     old = matrix;
     score = data{2};
+    reset = 0;
     switch E.Key
         case 'downarrow'
             [matrix, score] = move_down(matrix, score);
@@ -52,13 +48,18 @@ function handleGame(~,E)
             [matrix, score] = move_left(matrix, score);
         case 'rightarrow'
             [matrix, score] = move_right(matrix, score);
+        case 'r'
+            reset = 1;
+            newgame = reset_game(data);
+            matrix = newgame{1};
+            score = newgame{2};
         otherwise
             % if any other key is pressed, don't do anything.
             return;
     end
     
     % only spawn a new number if movement was made
-    if (~isequaln(old, matrix)) % ignore the fact that NaN != NaN
+    if (~isequaln(old, matrix) & ~reset) % ignore the fact that NaN != NaN
         matrix = spawn_number(matrix);
     end
     
@@ -122,6 +123,7 @@ function draw_board(data)
     % score banner    
     score = data{2};
     scoretxt = {'SCORE', int2str(score)};
+    resettext = {'RESET', 'press R'};
     
     scorebox_pos = [3.75 5.15].*square_size;
     resetbox_pos = [1 5.15].*square_size;
@@ -138,16 +140,16 @@ function draw_board(data)
       
     rectangle('Position',(cat(2, resetbox_pos, box_size)), ...
         'Curvature',0.1, 'FaceColor', bg_color, 'EdgeColor', 'none');
-    % 'ButtonDownFcn', {@reset_game, data}
     
-    text(resettext_pos(1), resettext_pos(2), 'RESET', 'FontName', 'Helvetica', ...
+    text(resettext_pos(1), resettext_pos(2), resettext, 'FontName', 'Helvetica', ...
          'FontWeight', 'bold', 'FontSize', fontsize/2, 'HorizontalAlignment', 'center', ...
           'verticalAlignment', 'middle', 'Color', colors(17,:));
       
-    check_game_over(data);
-    check_game_won(data);
-    
-    %draw_game_over(game_position, 0);
+    if (check_game_over(data) == 1)
+        draw_game_over(game_position, 0);
+    elseif (check_game_won(data) == 1)
+        draw_game_over(game_position, 1);
+    end
       
     axis off;
 end
@@ -206,15 +208,18 @@ function draw_game_over(game_position, won)
     
     text_position = [game_position(1) + game_position(3)/2 ...
                      game_position(2) + game_position(4)/2];
-    if (won ~= 0)
+    if (won == 0)
         color = [0 0 0 0.5]; % black
+        message = 'Game Over!';
     else
         color = [1 1 0 0.5]; % yellow
+        message = 'You Won!';
     end
+    message = {message, '', 'Press R to', 'play again'};
     
     r = rectangle('Position', game_position, 'FaceColor', color, ...
                   'EdgeColor', color);
-    text(text_position(1), text_position(2), 'Game Over!', 'FontName', 'Helvetica', ...
+    text(text_position(1), text_position(2), message, 'FontName', 'Helvetica', ...
          'FontWeight', 'bold', 'FontSize', 20, 'HorizontalAlignment', 'center', ...
           'verticalAlignment', 'middle', 'Color', 'red');
 end
@@ -272,6 +277,12 @@ function mat = spawn_number(matrix)
     free_spaces = isnan(matrix);
     free_spaces = (free_spaces .* rand(4));
     [~,index] = max(free_spaces(:));
-    matrix(index) = 2;
+    %spawns a 2 with 90% probability or 4 with 10% probability
+    if (rand(1) >= 0.9)
+        val = 4;
+    else
+        val = 2;
+    end
+    matrix(index) = val;
     mat = matrix;
 end
